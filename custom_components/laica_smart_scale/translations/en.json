@@ -1,0 +1,24 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "This device is already configured."
+    },
+    "step": {
+      "user": {
+        "title": "Laica Smart Scale",
+        "description": "Set up a Laica smart scale by Bluetooth address. For best results, add it automatically by stepping on the scale when it's in range.",
+        "data": {
+          "address": "Bluetooth address",
+          "name": "Name (optional)"
+        }
+      },
+      "confirm": {
+        "title": "Confirm Laica Smart Scale",
+        "description": "Add the discovered scale to Home Assistant.",
+        "data": {
+          "name": "Name"
+        }
+      }
+    }
+  }
+}

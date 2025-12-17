@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Local captures / artifacts (do not publish)
+logs/
+*.log
+*.zip

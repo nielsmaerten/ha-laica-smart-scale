@@ -1,0 +1,180 @@
+diff --git a/custom_components/ble_monitor/ble_parser/__init__.py b/custom_components/ble_monitor/ble_parser/__init__.py
+old mode 100644
+new mode 100755
+index 9c86133e7..2b693d62a
+--- a/custom_components/ble_monitor/ble_parser/__init__.py
++++ b/custom_components/ble_monitor/ble_parser/__init__.py
+@@ -16,6 +16,7 @@
+ from .inode import parse_inode
+ from .jinou import parse_jinou
+ from .kegtron import parse_kegtron
++from .laica import parse_laica
+ from .miscale import parse_miscale
+ from .moat import parse_moat
+ from .oral_b import parse_oral_b
+@@ -238,6 +239,10 @@ def parse_data(self, data):
+                         # Kegtron
+                         sensor_data = parse_kegtron(self, man_spec_data, mac, rssi)
+                         break
++                    elif comp_id == 0xA0AC and data_len == 0x0F and man_spec_data[14] in [0x06, 0x0D]:
++                        # Laica
++                        sensor_data = parse_laica(self, man_spec_data, mac, rssi)
++                        break
+ 
+                     # Filter on part of the UUID16
+                     elif man_spec_data[2] == 0xC0 and data_len == 0x10:
+diff --git a/custom_components/ble_monitor/ble_parser/laica.py b/custom_components/ble_monitor/ble_parser/laica.py
+new file mode 100755
+index 000000000..0aee6a52f
+--- /dev/null
++++ b/custom_components/ble_monitor/ble_parser/laica.py
+@@ -0,0 +1,70 @@
++"""Parser for Laica Smart Scale BLE advertisements"""
++import logging
++
++_LOGGER = logging.getLogger(__name__)
++
++
++def decrypt_value(arr):
++    hex_string = ''
++    for x in arr:
++        hex_string += '%02x' % (x ^ 0xa0)
++    return int(hex_string, 16)
++
++
++def read_weight(data):
++    val = decrypt_value(data[10:14])
++    weight = round((val & 0x3ffff) / 100) / 10
++
++    return weight
++
++
++def read_impedance(data):
++    impedance = decrypt_value(data[10:12])
++    impedance = min(max(impedance, 430), 630)
++
++    return impedance
++
++
++def parse_laica(self, data, source_mac, rssi):
++    xvalue = data[4:]
++
++    result = {
++        "type": "Laica Smart Scale",
++        "firmware": "Laica",
++        "mac": ''.join('{:02X}'.format(x) for x in source_mac),
++        "rssi": rssi,
++        "data": False,
++    }
++
++    if data[14] == 0x06:
++        impedance = read_impedance(data)
++        result.update({
++            "impedance": impedance,
++            "data": True,
++        })
++    elif data[14] == 0x0D:
++        weight = read_weight(data)
++        result.update({
++            "weight": weight,
++            "data": True,
++        })
++
++
++    # Check for duplicate messages
++    packet_id = xvalue.hex()
++    try:
++        prev_packet = self.lpacket_ids[source_mac]
++    except KeyError:
++        # start with empty first packet
++        prev_packet = None
++    if prev_packet == packet_id:
++        # only process new messages
++        if self.filter_duplicates is True:
++            return None
++    self.lpacket_ids[source_mac] = packet_id
++
++    result.update({
++        "packet": packet_id,
++    })
++
++    return result
+diff --git a/custom_components/ble_monitor/const.py b/custom_components/ble_monitor/const.py
+old mode 100644
+new mode 100755
+index 69e0f1831..c8bc5fcd8
+--- a/custom_components/ble_monitor/const.py
++++ b/custom_components/ble_monitor/const.py
+@@ -1017,6 +1017,7 @@ class BLEMonitorBinarySensorEntityDescription(
+     'Air Mentor Pro 2'        : [["temperature", "temperature calibrated", "humidity", "co2", "tvoc", "aqi", "air quality", "pm2.5", "pm10", "rssi"], [], []],
+     'Meter TH S1'             : [["temperature", "humidity", "battery", "rssi"], [], []],
+     'Meter TH plus'           : [["temperature", "humidity", "battery", "rssi"], [], []],
++    'Laica Smart Scale'       : [["weight", "impedance", "rssi"], [], []],
+ }
+ 
+ # Sensor manufacturer dictionary
+@@ -1122,6 +1123,7 @@ class BLEMonitorBinarySensorEntityDescription(
+     'Air Mentor Pro 2'        : 'Air Mentor',
+     'Meter TH S1'             : 'Switchbot',
+     'Meter TH plus'           : 'Switchbot',
++    'Laica Smart Scale'       : 'Laica',
+ }
+ 
+ 
+diff --git a/custom_components/ble_monitor/test/test_laica.py b/custom_components/ble_monitor/test/test_laica.py
+new file mode 100755
+index 000000000..ba6933b7e
+--- /dev/null
++++ b/custom_components/ble_monitor/test/test_laica.py
+@@ -0,0 +1,22 @@
++"""The tests for the Laica Smart Scale ble_parser."""
++from ble_monitor.ble_parser import BleParser
++
++
++class TestLaica:
++    """Tests for the Laica parser"""
++    def test_laica(self):
++        """Test Laica parser."""
++        data_string = "043e2b02010300a02bbe5e91a01f0201040303b0ff0fffaca0a02bbe5e91a0a02c92140dbf0709414141303032d9"
++        data = bytes(bytearray.fromhex(data_string))
++
++        # pylint: disable=unused-variable
++        ble_parser = BleParser()
++        sensor_msg, tracker_msg = ble_parser.parse_data(data)
++
++        assert sensor_msg["firmware"] == "Laica"
++        assert sensor_msg["type"] == "Laica Smart Scale"
++        assert sensor_msg["mac"] == "A0915EBE2BA0"
++        assert sensor_msg["packet"] == "a02bbe5e91a0a02c92140dbf"
++        assert sensor_msg["data"]
++        assert sensor_msg["weight"] == 13.0
++        assert sensor_msg["rssi"] == -39
+diff --git a/docs/_devices/Laica_Smart_Scale.md b/docs/_devices/Laica_Smart_Scale.md
+new file mode 100644
+index 000000000..ffd00b4fa
+--- /dev/null
++++ b/docs/_devices/Laica_Smart_Scale.md
+@@ -0,0 +1,19 @@
++---
++manufacturer: Laica
++name: Laica Smart Scale
++model: PS7011, PS7020
++image: PS7020.png
++physical_description:
++broadcasted_properties:
++  - weight
++  - impedance
++  - rssi
++broadcasted_property_notes:
++  - property: impedance
++    note: is only reported after the scale is stabilized
++broadcast_rate:
++active_scan:
++encryption_key:
++custom_firmware:
++notes:
++---
+diff --git a/docs/assets/images/PS7020.png b/docs/assets/images/PS7020.png
+new file mode 100644
+index 000000000..39c319b05
+Binary files /dev/null and b/docs/assets/images/PS7020.png differ
