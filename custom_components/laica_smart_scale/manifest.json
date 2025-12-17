@@ -9,6 +9,7 @@
     "bluetooth_adapters"
   ],
   "documentation": "https://github.com/nielsmaerten/ha-laica-smart-scale",
+  "issue_tracker": "https://github.com/nielsmaerten/ha-laica-smart-scale/issues",
   "integration_type": "device",
   "iot_class": "local_push",
   "requirements": [],

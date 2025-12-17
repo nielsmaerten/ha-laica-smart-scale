@@ -1,0 +1,6 @@
+{
+  "name": "Laica Smart Scale (BLE)",
+  "domains": [
+    "laica_smart_scale"
+  ]
+}
