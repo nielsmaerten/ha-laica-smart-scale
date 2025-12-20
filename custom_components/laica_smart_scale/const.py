@@ -26,4 +26,3 @@ def update_signal(entry_id: str) -> str:
     """Dispatcher signal for new advertisements for a config entry."""
 
     return f"{DOMAIN}_update_{entry_id}"
-

@@ -18,7 +18,9 @@ from .const import (
 TO_REDACT = {CONF_ADDRESS, "address", "unique_id"}
 
 
-async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigEntry) -> dict:
+async def async_get_config_entry_diagnostics(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> dict:
     entry_data = hass.data.get(DOMAIN, {}).get(entry.entry_id, {})
 
     last_seen = entry_data.get(DATA_LAST_SEEN)
@@ -38,4 +40,3 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigE
     }
 
     return async_redact_data(diagnostics, TO_REDACT)
-

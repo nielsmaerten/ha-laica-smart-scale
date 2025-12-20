@@ -13,9 +13,13 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
-_PARSER_PATH = _REPO_ROOT / "custom_components" / "laica_smart_scale" / "laica_parser.py"
+_PARSER_PATH = (
+    _REPO_ROOT / "custom_components" / "laica_smart_scale" / "laica_parser.py"
+)
 
-spec = importlib.util.spec_from_file_location("laica_smart_scale_laica_parser", _PARSER_PATH)
+spec = importlib.util.spec_from_file_location(
+    "laica_smart_scale_laica_parser", _PARSER_PATH
+)
 if spec is None or spec.loader is None:
     raise RuntimeError(f"Could not load parser module from {_PARSER_PATH}")
 
@@ -36,13 +40,17 @@ def _extract_laica_payload_from_hci_event(hci_event: bytes) -> bytes:
     marker = bytes.fromhex("0fffaca0")
     idx = hci_event.find(marker)
     if idx == -1:
-        raise ValueError("Manufacturer AD structure (0f ff ac a0) not found in test vector")
+        raise ValueError(
+            "Manufacturer AD structure (0f ff ac a0) not found in test vector"
+        )
 
     payload_start = idx + len(marker)
     payload_len = 12
     payload = hci_event[payload_start : payload_start + payload_len]
     if len(payload) != payload_len:
-        raise ValueError("Test vector truncated; could not read full manufacturer payload")
+        raise ValueError(
+            "Test vector truncated; could not read full manufacturer payload"
+        )
 
     return payload
 

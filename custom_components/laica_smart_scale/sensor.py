@@ -36,7 +36,9 @@ def _device_info(entry: ConfigEntry) -> DeviceInfo:
     )
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+) -> None:
     async_add_entities(
         [
             LaicaLastSeenSensor(hass, entry),
@@ -49,7 +51,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 class LaicaSensorBase(SensorEntity):
     _attr_has_entity_name = True
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, description: SensorEntityDescription) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        description: SensorEntityDescription,
+    ) -> None:
         self.hass = hass
         self._entry_id = entry.entry_id
         self._address = entry.data.get("address") or entry.unique_id
@@ -60,7 +67,9 @@ class LaicaSensorBase(SensorEntity):
 
     @property
     def available(self) -> bool:
-        entry_data: dict[str, Any] = self.hass.data.get(DOMAIN, {}).get(self._entry_id, {})
+        entry_data: dict[str, Any] = self.hass.data.get(DOMAIN, {}).get(
+            self._entry_id, {}
+        )
         last_seen: datetime | None = entry_data.get(DATA_LAST_SEEN)
         if last_seen is None:
             return False
@@ -68,7 +77,9 @@ class LaicaSensorBase(SensorEntity):
 
     async def async_added_to_hass(self) -> None:
         self.async_on_remove(
-            async_dispatcher_connect(self.hass, update_signal(self._entry_id), self._handle_update)
+            async_dispatcher_connect(
+                self.hass, update_signal(self._entry_id), self._handle_update
+            )
         )
 
     @callback
@@ -91,7 +102,9 @@ class LaicaLastSeenSensor(LaicaSensorBase):
 
     @property
     def native_value(self) -> datetime | None:
-        entry_data: dict[str, Any] = self.hass.data.get(DOMAIN, {}).get(self._entry_id, {})
+        entry_data: dict[str, Any] = self.hass.data.get(DOMAIN, {}).get(
+            self._entry_id, {}
+        )
         return entry_data.get(DATA_LAST_SEEN)
 
 
@@ -111,13 +124,17 @@ class LaicaWeightSensor(LaicaSensorBase):
 
     @property
     def native_value(self) -> float | None:
-        entry_data: dict[str, Any] = self.hass.data.get(DOMAIN, {}).get(self._entry_id, {})
+        entry_data: dict[str, Any] = self.hass.data.get(DOMAIN, {}).get(
+            self._entry_id, {}
+        )
         measurements: dict[str, Any] = entry_data.get(DATA_LAST_MEASUREMENTS, {})
         return measurements.get("weight_kg")
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
-        entry_data: dict[str, Any] = self.hass.data.get(DOMAIN, {}).get(self._entry_id, {})
+        entry_data: dict[str, Any] = self.hass.data.get(DOMAIN, {}).get(
+            self._entry_id, {}
+        )
         measurements: dict[str, Any] = entry_data.get(DATA_LAST_MEASUREMENTS, {})
 
         attrs = {
@@ -145,6 +162,8 @@ class LaicaImpedanceSensor(LaicaSensorBase):
 
     @property
     def native_value(self) -> int | None:
-        entry_data: dict[str, Any] = self.hass.data.get(DOMAIN, {}).get(self._entry_id, {})
+        entry_data: dict[str, Any] = self.hass.data.get(DOMAIN, {}).get(
+            self._entry_id, {}
+        )
         measurements: dict[str, Any] = entry_data.get(DATA_LAST_MEASUREMENTS, {})
         return measurements.get("impedance_ohm")

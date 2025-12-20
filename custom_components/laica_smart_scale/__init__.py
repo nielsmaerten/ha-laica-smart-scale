@@ -53,9 +53,12 @@ def _service_info_for_diagnostics(service_info: BluetoothServiceInfoBleak) -> di
         "source": getattr(service_info, "source", None),
         "connectable": getattr(service_info, "connectable", None),
         "service_uuids": list(service_info.service_uuids or []),
-        "service_data": {k: _as_hex(v) for k, v in (service_info.service_data or {}).items()},
+        "service_data": {
+            k: _as_hex(v) for k, v in (service_info.service_data or {}).items()
+        },
         "manufacturer_data": {
-            str(k): {"len": len(v), "hex": _as_hex(v)} for k, v in (service_info.manufacturer_data or {}).items()
+            str(k): {"len": len(v), "hex": _as_hex(v)}
+            for k, v in (service_info.manufacturer_data or {}).items()
         },
     }
 
@@ -92,7 +95,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry_data[DATA_LAST_SEEN] = None
     entry_data[DATA_LAST_PARSE_REPORT] = None
 
-    def _async_bluetooth_callback(service_info: BluetoothServiceInfoBleak, change: BluetoothChange) -> None:
+    def _async_bluetooth_callback(
+        service_info: BluetoothServiceInfoBleak, change: BluetoothChange
+    ) -> None:
         now = dt_util.utcnow()
         manufacturer_data = service_info.manufacturer_data or {}
         payload = manufacturer_data.get(MANUFACTURER_ID)
@@ -112,7 +117,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         if payload is None:
             # This should not happen once we match by manufacturer_id, but keep it visible.
-            _LOGGER.debug("Laica advert missing manufacturer_id=0x%04x payload", MANUFACTURER_ID)
+            _LOGGER.debug(
+                "Laica advert missing manufacturer_id=0x%04x payload", MANUFACTURER_ID
+            )
             return
 
         report = parse_laica_manufacturer_data(payload)
@@ -133,7 +140,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 measurements["weight_kg_raw"] = report.parsed.weight_kg
                 measurements["weight_is_stable"] = report.parsed.is_stable
                 measurements["weight_raw_flags"] = (
-                    None if report.parsed.raw_flags is None else f"0x{report.parsed.raw_flags:x}"
+                    None
+                    if report.parsed.raw_flags is None
+                    else f"0x{report.parsed.raw_flags:x}"
                 )
                 if report.parsed.is_stable:
                     measurements["weight_kg"] = report.parsed.weight_kg

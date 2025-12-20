@@ -19,7 +19,9 @@ class LaicaSmartScaleConfigFlow(ConfigFlow, domain=DOMAIN):
 
     _discovery_info: BluetoothServiceInfoBleak | None = None
 
-    async def async_step_bluetooth(self, discovery_info: BluetoothServiceInfoBleak) -> dict:
+    async def async_step_bluetooth(
+        self, discovery_info: BluetoothServiceInfoBleak
+    ) -> dict:
         """Handle Bluetooth discovery."""
 
         await self.async_set_unique_id(discovery_info.address)
@@ -38,7 +40,11 @@ class LaicaSmartScaleConfigFlow(ConfigFlow, domain=DOMAIN):
         assert self._discovery_info is not None
 
         if user_input is not None:
-            name = user_input.get(CONF_NAME) or self._discovery_info.name or "Laica Smart Scale"
+            name = (
+                user_input.get(CONF_NAME)
+                or self._discovery_info.name
+                or "Laica Smart Scale"
+            )
             return self.async_create_entry(
                 title=name,
                 data={
@@ -49,7 +55,9 @@ class LaicaSmartScaleConfigFlow(ConfigFlow, domain=DOMAIN):
 
         schema = vol.Schema(
             {
-                vol.Optional(CONF_NAME, default=self._discovery_info.name or "Laica Smart Scale"): cv.string,
+                vol.Optional(
+                    CONF_NAME, default=self._discovery_info.name or "Laica Smart Scale"
+                ): cv.string,
             }
         )
         return self.async_show_form(step_id="confirm", data_schema=schema)

@@ -23,6 +23,7 @@ KNOWN_VALUE_OFFSET = 6
 WEIGHT_VALUE_MASK = 0x3FFFF
 WEIGHT_STABLE_BIT = 0x80000000
 
+
 def _decrypt_to_int(data: bytes) -> int:
     decrypted = bytes((b ^ 0xA0) for b in data)
     return int.from_bytes(decrypted, byteorder="big", signed=False)
@@ -161,7 +162,9 @@ def parse_laica_manufacturer_data(payload: bytes) -> LaicaParseReport:
     """Parse Laica manufacturer payload bytes (Bleak-style: company id excluded)."""
 
     candidate_offsets = tuple(
-        idx for idx, b in enumerate(payload) if b in (PACKET_TYPE_IMPEDANCE, PACKET_TYPE_WEIGHT)
+        idx
+        for idx, b in enumerate(payload)
+        if b in (PACKET_TYPE_IMPEDANCE, PACKET_TYPE_WEIGHT)
     )
 
     attempts: list[dict[str, Any]] = []
