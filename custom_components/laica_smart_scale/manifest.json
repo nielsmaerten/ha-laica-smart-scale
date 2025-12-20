@@ -1,6 +1,12 @@
 {
   "domain": "laica_smart_scale",
   "name": "Laica Smart Scale (BLE)",
+  "bluetooth": [
+    {
+      "manufacturer_id": 41132,
+      "connectable": false
+    }
+  ],
   "codeowners": [
     "@nielsmaerten"
   ],
@@ -9,15 +15,9 @@
     "bluetooth_adapters"
   ],
   "documentation": "https://github.com/nielsmaerten/ha-laica-smart-scale",
-  "issue_tracker": "https://github.com/nielsmaerten/ha-laica-smart-scale/issues",
   "integration_type": "device",
   "iot_class": "local_push",
+  "issue_tracker": "https://github.com/nielsmaerten/ha-laica-smart-scale/issues",
   "requirements": [],
-  "version": "0.1.0",
-  "bluetooth": [
-    {
-      "manufacturer_id": 41132,
-      "connectable": false
-    }
-  ]
+  "version": "0.1.0"
 }

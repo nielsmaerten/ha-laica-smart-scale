@@ -15,6 +15,7 @@ from homeassistant.components.bluetooth import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.util import dt as dt_util
@@ -37,6 +38,7 @@ _LOGGER = logging.getLogger(__name__)
 UnsubCallback = Callable[[], None]
 
 _CONFIG_ENTRY_VERSION = 2
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 def _as_hex(data: bytes) -> str:
